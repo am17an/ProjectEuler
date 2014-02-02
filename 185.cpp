@@ -4,91 +4,92 @@
 #include <sstream>
 #include <map>
 #include <cmath>
+#include <cassert>
 #include <algorithm>
 
+#define MAXN 20
+#define MAX_HINTS 25
 using namespace std;
 
-const int MAXN = 5;
-
-bool ok[MAXN][10];
+string hints[MAX_HINTS];
+int correct[MAXN];
 int incorrect[MAXN][10];
+int chosen[MAXN];
+int nhints,nsize;
 
-int nh;
-int current[MAXN];
-int pos ;
-pair<string, int> hints[30];
-void dfs(int current_hint){
-  if(current_hint == nh-2){
-    // if you reach here you are done
-    for(int i = 0 ; i < MAXN ; ++i){
-      cout << current[i] ;
-    }
-    cout << endl;
+void input(){
+  
+  string x;
+  int y,k=0;
+  while(cin>> x && cin >> y){
+    correct[k] = y;
+    hints[k++] = x;
+    cout << x << " " << y << endl;
   }
-  // If all things are covered
-  if(pos == MAXN){
-    // check if current hint is compatible 
-    // Use this - if hint has 2 correct, our string should only match 2 
-    int same = 0;
-    for(int i = 0 ; i < MAXN ; ++i){
-      if(current[i] == hints[current_hint].first[i]) same++;
-    }
-    if(same!= hints[current_hint].second) return;
-    dfs(current_hint+1);
-  }
+  nhints = k;
+  nsize = hints[0].size();
+  cout << nhints << " " << nsize << endl;
+}
 
-  if(hints[current_hint].second == 1){
-    for(int i = 0 ; i < hints[current_hint].first.size() ; ++i){
-      if(incorrect[i][hints[current_hint].first[i]-'0']== 0 && current[i] == -1) {
-        current[i] = hints[current_hint].first[i]- '0'; pos++;
-        for(int j = 0 ; j < hints[current_hint].first.size() ; ++j)if(i!=j)
-          incorrect[j][hints[current_hint].first[j]-'0']++;
-        dfs(current_hint+1);
-        current[i] = -1; pos --;
-        for(int j = 0 ; j < hints[current_hint].first.size(); ++j) if(i!=j)
-          incorrect[j][hints[current_hint].first[j]-'0']--;
+
+void output(){
+  long long r=0;
+  bool go=true;
+  for(int i = 0 ; i < nsize; ++i){
+    cout << chosen[i] ;
+    //assert(chosen[i]!=-1);
+  }
+  cout << endl;
+}
+
+void print(int arr[]){
+  for(int i = 0 ; i < nsize;++i){
+    cerr << arr[i] << " ";
+  }
+  cerr << endl;
+}
+
+int total = 0;
+
+void dfs(int curr, int p, int t){
+  if(curr >= nhints){
+     output();
+      return;
+  }
+  // move on to next string
+  if(curr == nhints-1){
+    print(chosen);
+  }
+  if(p >= nsize){
+    if(t == correct[curr]){
+      dfs(curr+1,0,0);
+    }
+    return;
+  }
+  // choose to take 
+  if(nsize-p<correct[curr]-t)return;
+  if(t< correct[curr]){
+      if((incorrect[p][hints[curr][p]-'0']==0) && (chosen[p] == -1 || chosen[p] ==  (hints[curr][p]-'0'))){
+        bool ok = false;
+        if(chosen[p] == hints[curr][p]-'0') ok = true;
+        chosen[p] = hints[curr][p]-'0';
+        if(!ok) total++;
+        dfs(curr,p+1,t+1);
+        chosen[p] = -1;
+        if(!ok)total--;
+        if(ok) chosen[p] = hints[curr][p]-'0';
       }
-    }
   }
-  else if(hints[current_hint].second == 2){
-    for(int i = 0 ; i < hints[current_hint].first.size() ; ++i)
-      for(int j = i+1 ; j < hints[current_hint].first.size() ; ++j){
-        if(incorrect[i][hints[current_hint].first[i] - '0'] == 0 && 
-            incorrect[j][hints[current_hint].first[j] - '0'] == 0 && current[i] == -1
-            && current[j] == -1){
-              current[i] = hints[current_hint].first[i] - '0',pos++;
-              current[j] = hints[current_hint].first[j] - '0',pos++;
-              for(int k = 0 ; k < hints[current_hint].first.size(); ++k) if(k!=i && k!=j){
-                incorrect[k][hints[current_hint].first[k]] ++;
-              }
-              dfs(current_hint + 1);
-              current[i] = -1;pos--;
-              current[j] = -1;pos--;
-              
-              for(int k = 0 ; k < hints[current_hint].first.size(); ++k) if(k!=i && k!=j){
-                incorrect[k][hints[current_hint].first[k]] --;
-              }
-
-        }
-      }
+  
+  if(chosen[p] != hints[curr][p] -'0'){  
+    incorrect[p][hints[curr][p]-'0'] ++ ;
+    dfs(curr,p+1,t);
+    incorrect[p][hints[curr][p]-'0'] --;
   }
 }
 
 int main(){
- nh = 5;
- hints[0] = make_pair("90342",2);
- hints[1] = make_pair("39458",2);
- hints[2] = make_pair("34109",1);
- hints[3] = make_pair("51545",2);
- hints[4] = make_pair("12531",1);
-  
- incorrect[0][7] = 1;
- incorrect[1][0] = 1;
- incorrect[2][7] = 1;
- incorrect[3][9] = 1;
- incorrect[4][4] = 1;
- for(int i =0  ; i < 5 ; ++i) current[i] = -1;
- dfs(0);
-
+  for(int i = 0 ; i < MAXN; ++i) chosen[i] = -1;
+  input();
+  dfs(0,0,0);
 }
-
