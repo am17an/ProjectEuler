@@ -1,59 +1,59 @@
-#define N 2000
 #include <iostream>
-#include <cstdio>
-#include <vector>
-#include <sstream>
-#include <map>
-#include <cmath>
-#include <algorithm>
-#define FOR(i,n) for(int i =0 ; i < n ; ++i)
-using namespace std;
-typedef long long LL;
+#include <cstring>
+int64_t matrix[2000][2000];
+int64_t result[2000][2000];
+int64_t mod = 20092010;
+int64_t initial[2000];
 
-LL mat[N][N];
-LL mat2[N][N];
-LL ans[N][N];
+void matrix_multiply(int64_t matrix1[2000][2000], int64_t matrix2[2000][2000]) {
 
-int M = 20092010;
-inline LL safe(LL x, LL y)
-{
-  if(x*y >= M)
-  {
-    return (x*y)%M;
-  }
-  return (x*y);
-}
-void matMul(LL mat[N][N], LL mat2[N][N])
-{
-  FOR(i,N) FOR(j,N) ans[i][j] = 0;
-  FOR(i,N) FOR(j,N) FOR(k,N)  ans[i][j] += safe(ans[i][k],ans[k][j]);
-  FOR(i,N) FOR(j,N) mat[i][j] = ans[i][j]; 
-}
-
-void matExp(LL exp)
-{
-  for(LL ex = exp;ex;ex>>=1)
-  {
-    cout << ex << endl;
-    if(ex&1)
-    {
-      matMul(mat,mat2);
+    for(int i = 0 ; i < 2000; ++i) {
+        for(int j = 0; j < 2000; ++j) {
+            result[i][j] = 0;
+            for(int k = 0; k < 2000; ++k) {
+                result[i][j] += matrix2[i][k] * matrix2[k][j];
+                result[i][j] %= mod;
+            }
+        }
     }
-    matMul(mat2,mat2);
-  }
+
+    memcpy(matrix1, result, sizeof(result));
+
 }
-int main()
-{
-  // mat2 is your base
-  cout <<" START " << endl;
-  FOR(i,N-1) mat2[i][i+1] = 1;
-  mat2[0][1998] = 1; mat2[0][1999] = 1;
-  FOR(i,N) mat[i][i] = 1; 
-  int res = 0;
-  cout << "HERE" << endl;
-  matExp(1);
-  cout << "AGAIN HERE" << endl;
-  for(int i = 0 ; i < 2000 ; ++i)  
-      res += mat[0][i];
-  cout << res << endl;
+
+void matrix_expo(int64_t matrix[2000][2000], int64_t n) {
+    for(int i = 0; i < 2000; ++i) {
+        for(int j = 0; j < 2000; ++j) {
+            result[i][j] = matrix[i][j];
+        }
+    }
+
+    while(n > 0) {
+        std::cout << n << std::endl;
+        if(n % 2 == 1) {
+            matrix_multiply(result, matrix);
+        }
+        matrix_multiply(matrix, matrix);
+        n /= 2;
+    }
+}
+
+int main() {
+    matrix[2000-1][0] = 1;
+    matrix[2000-2][0] = 1;
+
+    for(int row = 0; row + 1 < 2000; ++row) {
+       matrix[row][row+1] = 1;
+    }
+
+    matrix_expo(matrix, 20000);
+
+
+    int64_t ans = 0;
+    for(int i = 0; i < 2000; ++i) {
+        ans += matrix[0][i];
+        ans %= mod;
+    }
+
+    std::cout << ans << std::endl;
 }
