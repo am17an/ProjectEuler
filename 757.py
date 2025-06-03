@@ -1,23 +1,18 @@
+def find_special_numbers(limit):
+    results = set()
+    x = 1
+    while True:
+        x_term = x * (x + 1)
+        if x_term * x_term > limit:
+            break
+        y = 1
+        while True:
+            val = x_term * y * (y + 1)
+            if val > limit:
+                break
+            results.add(val)
+            y += 1
+        x += 1
+    return sorted(results)
 
-squares = []
-for i in range(1, 1000):
-    squares.append(i*i)
-
-
-cumsums = []
-for i in range(len(squares)):
-    for j in range(i, len(squares)):
-        cumsums.append(squares[i] + squares[j])
-
-
-
-cumsums = sorted(cumsums)
-count = 0
-for i in range(1, len(cumsums)):
-    if cumsums[i] - cumsums[i-1] == 1:
-        print(cumsums[i], cumsums[i-1])
-        count += 1
-
-print(count)
-
-        
+print(len(find_special_numbers(int(1e14))))
